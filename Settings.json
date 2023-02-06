@@ -8,11 +8,14 @@
     
     "MaxTXFeeBNB": 0.01,
 
-    "Slippage": 30,
+    "Slippage": 20,
 
-    "MinLiquidityBNB": 0.5,
+    "MinLiquidityUSD": 10000,
     "MaxSellTax": 25,
     "MaxBuyTax": 15,
+
+    "timeout": 120,
+    "SaveGasCost": true,
 
     "cc_BlacklistWords": [
         "ROOT",
