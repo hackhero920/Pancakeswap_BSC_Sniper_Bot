@@ -1,7 +1,6 @@
-from web3 import Web3
-from web3.middleware import geth_poa_middleware
-from web3 import constants
+from web3 import Web3, constants
 import json
+import time
 from style import style
 
 
@@ -198,64 +197,76 @@ class TXN():
         else:
             return True, style.GREEN + "\nAllready approved!" + style.RESET
 
-    def buy_token(self):
+    def buy_token(self, retry: int = 1):
         if self.safeGas != True:
-            return self.buy_token_fast()
+            return self.buy_token_fast(retry)
         else:
-            return self.buy_token_cheap()
+            return self.buy_token_cheap(retry)
 
-    def buy_token_fast(self):
-        txn = self.swapper.functions.snipeETHtoToken(
-            self.token_address,
-            self.slippage * 10,
-            self.address
-        ).buildTransaction(
-            {'from': self.address,
-             'gasPrice': self.gas_price,
-             'nonce': self.w3.eth.getTransactionCount(self.address),
-             'value': int(self.quantity * (10**18))}
-        )
-        txn.update({'gas': int(self.estimateGas(txn))})
-        signed_txn = self.w3.eth.account.sign_transaction(
-            txn,
-            self.private_key
-        )
-        txn = self.w3.eth.sendRawTransaction(signed_txn.rawTransaction)
-        print(style.GREEN + "\nBUY Hash:", txn.hex() + style.RESET)
-        txn_receipt = self.w3.eth.waitForTransactionReceipt(
-            txn, timeout=self.timeout)
-        if txn_receipt["status"] == 1:
-            return True, style.GREEN + "\nBUY Transaction Successfull!" + style.RESET
-        else:
-            return False, style.RED + "\nBUY Transaction Faild!" + style.RESET
+    def buy_token_fast(self, trys):
+        while trys:
+            try:
+                txn = self.swapper.functions.snipeETHtoToken(
+                    self.token_address,
+                    self.slippage * 10,
+                    self.address
+                ).buildTransaction(
+                    {'from': self.address,
+                     'gasPrice': self.gas_price,
+                     'nonce': self.w3.eth.getTransactionCount(self.address),
+                     'value': int(self.quantity * (10**18))}
+                )
+                txn.update({'gas': int(self.estimateGas(txn))})
+                signed_txn = self.w3.eth.account.sign_transaction(
+                    txn,
+                    self.private_key
+                )
+                txn = self.w3.eth.sendRawTransaction(signed_txn.rawTransaction)
+                print(style.GREEN + "\nBUY Hash:", txn.hex() + style.RESET)
+                txn_receipt = self.w3.eth.waitForTransactionReceipt(
+                    txn, timeout=self.timeout)
+                if txn_receipt["status"] == 1:
+                    return True, style.GREEN + "\nBUY Transaction Successfull!" + style.RESET
+                else:
+                    return False, style.RED + "\nBUY Transaction Faild!" + style.RESET
+            except Exception as e:
+                trys -= 1
+                print(style.RED + "\nBUY Transaction Faild!" + style.RESET)
+                time.sleep(1)
 
-    def buy_token_cheap(self):
-        Amount, TokenWay, DexWay = self.fetchOutputBNBtoToken()
-        minAmount = int(Amount - ((Amount / 100) * self.slippage))
-        txn = self.swapper.functions.fromETHtoToken(
-            minAmount,
-            TokenWay,
-            DexWay,
-            self.address
-        ).buildTransaction(
-            {'from': self.address,
-             'gasPrice': self.gas_price,
-             'nonce': self.w3.eth.getTransactionCount(self.address),
-             'value': int(self.quantity * (10**18))}
-        )
-        txn.update({'gas': int(self.estimateGas(txn))})
-        signed_txn = self.w3.eth.account.sign_transaction(
-            txn,
-            self.private_key
-        )
-        txn = self.w3.eth.sendRawTransaction(signed_txn.rawTransaction)
-        print(style.GREEN + "\nBUY Hash:", txn.hex() + style.RESET)
-        txn_receipt = self.w3.eth.waitForTransactionReceipt(
-            txn, timeout=self.timeout)
-        if txn_receipt["status"] == 1:
-            return True, style.GREEN + "\nBUY Transaction Successfull!" + style.RESET
-        else:
-            return False, style.RED + "\nBUY Transaction Faild!" + style.RESET
+    def buy_token_cheap(self, trys):
+        while trys:
+            try:
+                Amount, TokenWay, DexWay = self.fetchOutputBNBtoToken()
+                minAmount = int(Amount - ((Amount / 100) * self.slippage))
+                txn = self.swapper.functions.fromETHtoToken(
+                    minAmount,
+                    TokenWay,
+                    DexWay,
+                    self.address
+                ).buildTransaction(
+                    {'from': self.address,
+                     'gasPrice': self.gas_price,
+                     'nonce': self.w3.eth.getTransactionCount(self.address),
+                     'value': int(self.quantity * (10**18))}
+                )
+                txn.update({'gas': int(self.estimateGas(txn))})
+                signed_txn = self.w3.eth.account.sign_transaction(
+                    txn,
+                    self.private_key
+                )
+                txn = self.w3.eth.sendRawTransaction(signed_txn.rawTransaction)
+                print(style.GREEN + "\nBUY Hash:", txn.hex() + style.RESET)
+                txn_receipt = self.w3.eth.waitForTransactionReceipt(
+                    txn, timeout=self.timeout)
+                if txn_receipt["status"] == 1:
+                    return True, style.GREEN + "\nBUY Transaction Successfull!" + style.RESET
+                else:
+                    return False, style.RED + "\nBUY Transaction Faild!" + style.RESET
+            except Exception as e:
+                trys -= 1
+                print(style.RED + "\nBUY Transaction Faild!" + style.RESET)
+                time.sleep(1)
 
     def sell_tokens(self, percent: int = 100):
         self.approve()
