@@ -1,10 +1,10 @@
-import requests
-from txns import TXN
-import argparse
-import json
-from time import sleep
-from halo import Halo
 from style import style
+from halo import Halo
+from time import sleep
+import json
+import argparse
+from txns import TXN
+import requests
 
 ascii = """
   ______               ___            
@@ -20,7 +20,7 @@ ascii = """
 """
 
 parser = argparse.ArgumentParser(
-    description='Set your Token and Amount example: "sniper.py -t 0x34faa80fec0233e045ed4737cc152a71e490e2e3 -a 0.2 -s 15"')
+    description='Set your Token and Amount example: "sniper.py -t 0x34faa80fec0233e045ed4737cc152a71e490e2e3 -a 0.2"')
 parser.add_argument(
     '-t', '--token', help='str, Token for snipe e.g. "-t 0x34faa80fec0233e045ed4737cc152a71e490e2e3"')
 parser.add_argument('-a', '--amount', default=0,
@@ -28,7 +28,7 @@ parser.add_argument('-a', '--amount', default=0,
 parser.add_argument('-tx', '--txamount', default=1, nargs="?", const=1, type=int,
                     help='int, how mutch tx you want to send? It Split your BNB Amount in e.g. "-tx 5"')
 parser.add_argument('-sp', '--sellpercent', default=100, nargs="?", const=1, type=int,
-                    help='int, how mutch tokens you want to sell? Percentage e.g. "-sa 80"')
+                    help='int, how mutch tokens you want to sell? Percentage e.g. "-sp 80"')
 parser.add_argument('-hp', '--honeypot', default=False, action="store_true",
                     help='Check if your token to buy is a Honeypot, e.g. "-hp" or "--honeypot"')
 parser.add_argument('-nb', '--nobuy', action="store_true",
@@ -40,7 +40,7 @@ parser.add_argument('-sl', '--stoploss', default=0, nargs="?", const=True, type=
 parser.add_argument('-tsl', '--trailingstoploss', default=0, nargs="?", const=True,
                     type=int, help='int, Percentage Trailing-Stop-loss from your first Quote "-tsl 50" ')
 parser.add_argument('-wb', '--awaitBlocks', default=0, nargs="?", const=True,
-                    type=int, help='int, Await Blocks before sending BUY Transaction "-ab 50" ')
+                    type=int, help='int, Await Blocks before sending BUY Transaction "-wb 5" ')
 parser.add_argument('-cmt', '--checkMaxTax',  action="store_true",
                     help='get Token Tax and check if its higher.')
 parser.add_argument('-cc', '--checkcontract',  action="store_true",
@@ -51,6 +51,8 @@ parser.add_argument('-bo', '--buyonly',  action="store_true",
                     help='Buy Tokens with from your given amount')
 parser.add_argument('-cl', '--checkliquidity',  action="store_true",
                     help='with this arg you use liquidityCheck')
+parser.add_argument('-r', '--retry', default=3, nargs="?", const=True, type=int,
+                    help='with this arg you retry automatically if your tx failed, e.g. "-r 5" or "--retry 5" for max 5 Retrys')
 parser.add_argument('-dsec', '--DisabledSwapEnabledCheck',  action="store_true",
                     help='this argument disabled the SwapEnabled Check!')
 args = parser.parse_args()
@@ -149,7 +151,7 @@ class SniperBot():
         for i in range(self.tx):
             spinner.start()
             self.TXN = TXN(self.token, self.amountForSnipe)
-            tx = self.TXN.buy_token()
+            tx = self.TXN.buy_token(args.retry)
             spinner.stop()
             print(tx[-1])
             if tx[0] != True:
@@ -236,7 +238,7 @@ class SniperBot():
     def fetchLiquidity(self):
         liq = self.TXN.getLiquidityUSD()[1]
         print(style().GREEN+"[LIQUIDTY] Current Token Liquidity:",
-              round(liq, 3), "BNB" + style().RESET)
+              round(liq, 3), "USD" + style().RESET)
         if float(liq) < float(self.settings["MinLiquidityUSD"]):
             print(style.RED+"[LIQUIDTY] <- TO SMALL, EXIT!")
             raise SystemExit
@@ -323,20 +325,21 @@ class SniperBot():
 
         if args.sellonly:
             print("Start SellOnly, for selling tokens!")
-            print("Wait for Liquidity?")
-            liqq = input("y/n\n > ")
-            percent = int(input(
-                "How much percent of tokens do you want to sell?\n> "))
-            if liqq.lower() == "y":
-                self.awaitEnabledBuy()
             self.awaitApprove()
-            print(self.TXN.sell_tokens(percent)[1])
+            if args.DisabledSwapEnabledCheck != True:
+                self.awaitEnabledBuy()
+            if args.sellpercent > 0 and args.sellpercent < 100:
+                print(self.TXN.sell_tokens(args.sellpercent)[1])
+            else:
+                percent = int(input("Enter Percent you want to sell: "))
+                print(self.TXN.sell_tokens(percent)[1])
+
             raise SystemExit
 
         if args.buyonly:
             print(
                 f"Start BuyOnly, buy now with {self.amountForSnipe}BNB tokens!")
-            print(self.TXN.buy_token()[1])
+            print(self.TXN.buy_token(args.retry)[1])
             raise SystemExit
 
         if args.nobuy != True:
@@ -376,14 +379,14 @@ class SniperBot():
             self.awaitBuy()
 
         # Give the RPC/WS some time to Index your address nonce, make it higher if " ValueError: {'code': -32000, 'message': 'nonce too low'} "
-        sleep(7)
 
         if self.tsl != 0 or self.tp != 0 or self.sl != 0:
+            sleep(7)
             self.awaitApprove()
             self.awaitMangePosition()
 
-    print(style().GREEN +
-          "[DONE] TradingTigers Sniper Bot finish!" + style().RESET)
+        print(style().GREEN +
+              "[DONE] TradingTigers Sniper Bot finish!" + style().RESET)
 
 
 SniperBot().StartUP()
