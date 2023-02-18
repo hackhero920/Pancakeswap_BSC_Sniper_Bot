@@ -6,7 +6,7 @@
 
 ## The first Binance Smart Chain sniper bot with Honeypot checker!  
 <div><a href="https://discord.gg/Qc6y9kyCgU" > <img src="https://trading-tigers.com/logos/preview001.png" height="300"></a></div>
-<div><a href="https://github.com/Trading-Tiger/Pancakeswap_BSC_Sniper_Bot/releases" > <img src="https://trading-tigers.com/logos/preview003.png" height="400"></a></div>
+<div><a href="https://github.com/Trading-Tiger/Pancakeswap_BSC_Sniper_Bot/releases" > <img src="https://trading-tigers.com/logos/sniper/Preview_Sniper_GUI_Mainv3.02.png" height="500"></a></div>
 <br />
 
 ## Maximize Your Profits with Our Token Launch Solution
