@@ -55,6 +55,12 @@ class TXN():
     def get_token_decimals(self):
         return self.token_contract.functions.decimals().call()
 
+    def get_token_Name(self):
+        return self.token_contract.functions.name().call()
+
+    def get_token_Symbol(self):
+        return self.token_contract.functions.symbol().call()
+
     def getBlockHigh(self):
         return self.w3.eth.block_number
 
@@ -89,18 +95,14 @@ class TXN():
         call = self.swapper.functions.getTokenInformations(
             self.token_address).call()
         buy_tax = round(
-            ((call[0] - call[1]) / call[0] * 100) - 0.7)
+            ((call[0] - call[1]) / (call[0]) * 100) - 0.7)
         sell_tax = round(
-            ((call[2] - call[3]) / call[2] * 100) - 0.7)
+            ((call[2] - call[3]) / (call[2]) * 100) - 0.7)
 
-        if call[6] and call[7] == True:
+        if call[4] and call[5] and call[6] and call[7] == True:
             honeypot = False
         else:
             honeypot = True
-        print(style.GREEN + "[TOKENTAX] Current Token BuyTax:",
-              buy_tax, "%" + style.RESET)
-        print(style.GREEN + "[TOKENTAX] Current Token SellTax:",
-              sell_tax, "%" + style.RESET)
         return buy_tax, sell_tax, honeypot
 
     def checkifTokenBuyDisabled(self):
