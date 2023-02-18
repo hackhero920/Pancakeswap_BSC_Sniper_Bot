@@ -53,7 +53,7 @@ parser.add_argument('-cl', '--checkliquidity',  action="store_true",
                     help='with this arg you use liquidityCheck')
 parser.add_argument('-r', '--retry', default=3, nargs="?", const=True, type=int,
                     help='with this arg you retry automatically if your tx failed, e.g. "-r 5" or "--retry 5" for max 5 Retrys')
-parser.add_argument('-dsec', '--DisabledSwapEnabledCheck',  action="store_true",
+parser.add_argument('-sec', '--SwapEnabledCheck',  action="store_true",
                     help='this argument disabled the SwapEnabled Check!')
 args = parser.parse_args()
 
@@ -71,6 +71,7 @@ class SniperBot():
         return settings
 
     def SayWelcome(self):
+        self.TXN = TXN(self.token, self.amountForSnipe)
         print(style().YELLOW + ascii + style().RESET)
         print(style().GREEN + """Attention, You pay a 0.7% Tax on your swap amount if you dont hold 1k TIGS!""" + style().RESET)
         print(style().GREEN +
@@ -80,12 +81,17 @@ class SniperBot():
               str(self.amount) + " BNB" + style().RESET)
         print(style().YELLOW + "Token to Interact :",
               style().GREEN + str(self.token) + style().RESET)
+        print(style().YELLOW + "Token Name:",
+              style().GREEN + str(self.TXN.get_token_Name()) + style().RESET)
+        print(style().YELLOW + "Token Symbol:",
+              style().GREEN + str(self.TXN.get_token_Symbol()) + style().RESET)
         print(style().YELLOW + "Transaction to send:",
               style().GREEN + str(self.tx) + style().RESET)
         print(style().YELLOW + "Amount per transaction :", style().GREEN +
               str("{0:.8f}".format(self.amountForSnipe)) + style().RESET)
         print(style().YELLOW + "Await Blocks before buy :",
               style().GREEN + str(self.wb) + style().RESET)
+
         if self.tsl != 0:
             print(style().YELLOW + "Trailing Stop loss Percent :",
                   style().GREEN + str(self.tsl) + style().RESET)
@@ -326,14 +332,13 @@ class SniperBot():
         if args.sellonly:
             print("Start SellOnly, for selling tokens!")
             self.awaitApprove()
-            if args.DisabledSwapEnabledCheck != True:
+            if args.SwapEnabledCheck == True:
                 self.awaitEnabledBuy()
             if args.sellpercent > 0 and args.sellpercent < 100:
                 print(self.TXN.sell_tokens(args.sellpercent)[1])
             else:
                 percent = int(input("Enter Percent you want to sell: "))
                 print(self.TXN.sell_tokens(percent)[1])
-
             raise SystemExit
 
         if args.buyonly:
@@ -344,29 +349,51 @@ class SniperBot():
 
         if args.nobuy != True:
             self.awaitLiquidity()
-            if args.DisabledSwapEnabledCheck != True:
+            if args.SwapEnabledCheck == True:
                 self.awaitEnabledBuy()
 
         if args.checkcontract:
             self.CheckVerifyCode()
 
-        honeyTax = self.TXN.checkToken()
         if self.hp == True:
-            print(style().YELLOW + "Checking Token..." + style().RESET)
-            if honeyTax[2] == True:
-                print(style.RED + "Token is Honeypot, exiting")
-                raise SystemExit
-            elif honeyTax[2] == False:
-                print(style().GREEN +
-                      "[DONE] Token is NOT a Honeypot!" + style().RESET)
+            try:
+                honeyTax = self.TXN.checkToken()
+                print(style().YELLOW + "Checking Token..." + style().RESET)
+
+                if honeyTax[2] == True:
+                    print(style.RED + "Token is Honeypot, exiting")
+                    raise SystemExit
+                elif honeyTax[2] == False:
+                    print(style().GREEN +
+                          "[DONE] Token is NOT a Honeypot!" + style().RESET)
+            except Exception as e:
+                self.i = input(
+                    style().RED+"Error in HoneyPot Check, HIGH Risk to enter a Honeypot!\n" + style().GREEN + " Exiting? y/n \n > " + style().RESET)
+                if self.i.lower() == "y":
+                    raise SystemExit
 
         if args.checkMaxTax == True:
-            if honeyTax[1] > self.settings["MaxSellTax"]:
-                print(style().RED+"Token SellTax exceeds Settings.json, exiting!")
-                raise SystemExit
-            if honeyTax[0] > self.settings["MaxBuyTax"]:
-                print(style().RED+"Token BuyTax exceeds Settings.json, exiting!")
-                raise SystemExit
+            try:
+                honeyTax = self.TXN.checkToken()
+                print(style.GREEN + "[TOKENTAX] Current Token BuyTax:",
+                      honeyTax[0], "%" + style.RESET)
+                print(style.GREEN + "[TOKENTAX] Current Token SellTax:",
+                      honeyTax[1], "%" + style.RESET)
+                if honeyTax[1] > self.settings["MaxSellTax"]:
+                    print(style().RED+"Token SellTax exceeds Settings.json, exiting!")
+                    raise SystemExit
+                if honeyTax[0] > self.settings["MaxBuyTax"]:
+                    print(style().RED+"Token BuyTax exceeds Settings.json, exiting!")
+                    raise SystemExit
+            except Exception as e:
+                if self.i:
+                    if self.i.lower() == "y":
+                        raise SystemExit
+                else:
+                    self.i = input(
+                        style().RED+"Error in Token Tax Check, HIGH Risk to enter a Honeypot!\n" + style().GREEN + "Exiting? y/n \n > " + style().RESET)
+                    if self.i.lower() == "y":
+                        raise SystemExit
 
         if self.wb != 0:
             self.awaitBlocks()
