@@ -167,7 +167,7 @@ class SniperBot():
         spinner = Halo(text='await Sell', spinner='dots')
         spinner.start()
         self.TXN = TXN(self.token, self.amountForSnipe)
-        tx = self.TXN.sell_tokens(args.sellamount)
+        tx = self.TXN.sell_tokens(args.sellpercent)
         spinner.stop()
         print(tx[1])
         if tx[0] != True:
