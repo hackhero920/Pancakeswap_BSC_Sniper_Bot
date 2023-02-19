@@ -281,8 +281,9 @@ class SniperBot():
                 if self.tsl != 0:
                     if LastPrice > highestLastPrice:
                         highestLastPrice = LastPrice
-                        TrailingStopLoss = self.calcNewTrailingStop(LastPrice)
-                    if LastPrice < TrailingStopLoss:
+                        self.TrailingStopLoss = self.calcNewTrailingStop(
+                            LastPrice)
+                    if LastPrice < self.TrailingStopLoss:
                         print(style().GREEN +
                               "[TRAILING STOP LOSS] Triggert!" + style().RESET)
                         self.awaitSell()
@@ -305,23 +306,26 @@ class SniperBot():
                         break
 
                 msg = str("Token Balance: " + str("{0:.5f}".format(
-                    TokenBalance)) + "| CurrentOutput: "+str("{0:.7f}".format(LastPrice))+"BNB")
+                    TokenBalance)) + " | CurrentOutput: "+str("{0:.7f}".format(LastPrice))+"BNB")
                 if self.stoploss != 0:
-                    msg = msg + "| Stop loss below: " + \
+                    msg = msg + " | Stop loss below: " + \
                         str("{0:.7f}".format(self.stoploss)) + "BNB"
                 if self.takeProfitOutput != 0:
                     msg = msg + "| Take Profit Over: " + \
                         str("{0:.7f}".format(self.takeProfitOutput)) + "BNB"
                 if self.tsl != 0:
-                    msg = msg + "| Trailing Stop loss below: " + \
-                        str("{0:.7f}".format(TrailingStopLoss)) + "BNB"
+                    msg = msg + " | Trailing Stop loss below: " + \
+                        str("{0:.7f}".format(self.TrailingStopLoss)) + "BNB"
                 print(msg, end="\r")
 
             except Exception as e:
-                print(e)
                 if KeyboardInterrupt:
                     raise SystemExit
-                sleep(5)
+                print(
+                    style().RED + f"[ERROR] {str(e)},\n\nSleeping now 30sec and Reinit RPC!" + style().RESET)
+                sleep(30)
+                self.TXN = TXN(self.token, self.amountForSnipe)
+                continue
 
         print(style().GREEN +
               "[DONE] Position Manager Finished!" + style().RESET)
