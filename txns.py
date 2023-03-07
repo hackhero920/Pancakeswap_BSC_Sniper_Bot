@@ -106,9 +106,22 @@ class TXN():
         return buy_tax, sell_tax, honeypot
 
     def checkifTokenBuyDisabled(self):
-        disabled = self.swapper.functions.getTokenInformations(
-            self.token_address).call()[4]
-        return disabled
+        try:
+            self.swapper.functions.snipeETHtoToken(
+                self.token_address,
+                int(self.slippage * 10),
+                self.address
+            ).buildTransaction(
+                {
+                    'from': self.address,
+                    'gasPrice': self.gas_price,
+                    'nonce': self.w3.eth.getTransactionCount(self.address),
+                    'value': int(self.quantity * (10**18))
+                }
+            )
+            return True
+        except Exception as e:
+            return False
 
     def estimateGas(self, txn):
         gas = self.w3.eth.estimateGas({
@@ -120,7 +133,6 @@ class TXN():
         maxGasBNB = Web3.fromWei(gas * self.gas_price, "ether")
         print(style.GREEN + "\nMax Transaction cost " +
               str(maxGasBNB) + " BNB" + style.RESET)
-
         if maxGasBNB > self.MaxGasInBNB:
             print(style.RED + "\nTx cost exceeds your settings, exiting!")
             raise SystemExit
@@ -232,6 +244,7 @@ class TXN():
                 else:
                     return False, style.RED + "\nBUY Transaction Faild!" + style.RESET
             except Exception as e:
+                print(e)
                 trys -= 1
                 print(style.RED + "\nBUY Transaction Faild!" + style.RESET)
                 time.sleep(1)
@@ -266,6 +279,7 @@ class TXN():
                 else:
                     return False, style.RED + "\nBUY Transaction Faild!" + style.RESET
             except Exception as e:
+                print(e)
                 trys -= 1
                 print(style.RED + "\nBUY Transaction Faild!" + style.RESET)
                 time.sleep(1)
