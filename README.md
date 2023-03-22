@@ -18,10 +18,12 @@ The tool uses advanced algorithms to analyze multiple exchange routes to find th
 
 ## Low Tax Rates 
 There's a 0.7% tax on the swap amount, but if you hold 1k TIGS, your tax rate drops to an incredibly low 0.2%. This means you can keep more of your profits. 
+
 ## Enjoy a Seamless Swapping Experience 
 With this tool, you can effortlessly swap your assets for BNB and take advantage of the many benefits it offers. So why wait? Start maximizing your returns today!  
+
 ## Support Us and the Community with [TIGS Token](https://bscscan.com/token/0x34faa80fec0233e045ed4737cc152a71e490e2e3) 
-By purchasing GAM tokens, you not only support our platform, but you also contribute to the growth and development of our community. Invest in our future and help us continue to bring value to you and other members. Get your GAM tokens today!
+By purchasing TIGS tokens, you not only support our platform, but you also contribute to the growth and development of our community. Invest in our future and help us continue to bring value to you and other members.
 <br />
 <br />
 <br />
