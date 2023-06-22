@@ -4,6 +4,9 @@
 ### Web3 Pancakeswap, BiSwap & Mdex Sniper && Take Profit/StopLose bot written in python3, Please note the license conditions!
 <br />
 
+## Install Video
+[![Installing the Trading Tiger BSC Sniper Bot](http://img.youtube.com/vi/3aQXiyZKumM/0.jpg)](http://www.youtube.com/watch?v=3aQXiyZKumM "Installing the Trading Tiger BSC Sniper Bot")
+
 ## The first Binance Smart Chain sniper bot with Honeypot checker!  
 <div><a href="https://discord.gg/Qc6y9kyCgU" > <img src="https://trading-tigers.com/logos/preview001.png" height="300"></a></div>
 <div><a href="https://github.com/Trading-Tiger/Pancakeswap_BSC_Sniper_Bot/releases" > <img src="https://trading-tigers.com/logos/sniper/Preview_Sniper_GUI_Mainv3.02.png" height="500"></a></div>
